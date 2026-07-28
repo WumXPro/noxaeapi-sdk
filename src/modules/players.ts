@@ -36,13 +36,18 @@ export class PlayersModule {
   kick(uuid: string, reason?: string): Promise<void> {
     return this.http.request("POST", `players/${encodeURIComponent(uuid)}/kick`, {
       body: reason ? { reason } : undefined,
+      form: true,
     });
   }
 
-  /** Ban a player, optionally with a reason and expiration. */
-  ban(uuid: string, reason?: string): Promise<void> {
+  /**
+   * Ban a player, optionally with a reason and an ISO-8601 expiry
+   * (e.g. "2030-01-01T00:00:00Z"). Omit `expiry` for a permanent ban.
+   */
+  ban(uuid: string, reason?: string, expiry?: string): Promise<void> {
     return this.http.request("POST", `players/${encodeURIComponent(uuid)}/ban`, {
-      body: reason ? { reason } : undefined,
+      body: reason || expiry ? { reason, expiry } : undefined,
+      form: true,
     });
   }
 
@@ -58,6 +63,7 @@ export class PlayersModule {
   ): Promise<void> {
     return this.http.request("POST", `players/${encodeURIComponent(uuid)}/teleport`, {
       body: location,
+      form: true,
     });
   }
 
@@ -68,6 +74,7 @@ export class PlayersModule {
   ): Promise<void> {
     return this.http.request("PUT", `players/${encodeURIComponent(uuid)}/gamemode`, {
       body: { gamemode },
+      form: true,
     });
   }
 

@@ -15,11 +15,18 @@ export class ServerModule {
   }
 
   /**
-   * Run a console command on the server.
+   * Run a console command on the server, returning its console output.
    * This is a privileged endpoint — requires a write-enabled API key.
+   *
+   * `waitMs` is how long to wait for output before returning (server
+   * default 500ms if omitted). The server returns the joined output as a
+   * plain JSON string, not `{ lines }`.
    */
-  exec(command: string): Promise<{ lines: string[] }> {
-    return this.http.request("POST", "server/exec", { body: { command } });
+  exec(command: string, waitMs?: number): Promise<string> {
+    return this.http.request("POST", "server/exec", {
+      body: { command, time: waitMs },
+      form: true,
+    });
   }
 
   /** List server operators. */
@@ -27,14 +34,24 @@ export class ServerModule {
     return this.http.request("GET", "server/ops");
   }
 
-  /** Grant operator status to a player. */
+  /**
+   * Grant operator status to a player.
+   *
+   * Server-side (`ServerApi.opPlayer`) reads `ctx.formParam("playerUuid")`,
+   * not "uuid" — the field name matters here.
+   */
   opPlayer(uuid: string): Promise<void> {
-    return this.http.request("POST", "server/ops", { body: { uuid } });
+    return this.http.request("POST", "server/ops", { body: { playerUuid: uuid }, form: true });
   }
 
-  /** Revoke operator status from a player. */
+  /**
+   * Revoke operator status from a player.
+   *
+   * Server-side (`ServerApi.deopPlayer`) reads this from the query string
+   * (`ctx.queryParam("playerUuid")`), not the request body.
+   */
   deopPlayer(uuid: string): Promise<void> {
-    return this.http.request("DELETE", "server/ops", { body: { uuid } });
+    return this.http.request("DELETE", "server/ops", { query: { playerUuid: uuid } });
   }
 
   /** Get the current whitelist. */
@@ -44,12 +61,17 @@ export class ServerModule {
 
   /** Add a player to the whitelist. */
   addToWhitelist(uuid: string, name?: string): Promise<void> {
-    return this.http.request("POST", "server/whitelist", { body: { uuid, name } });
+    return this.http.request("POST", "server/whitelist", { body: { uuid, name }, form: true });
   }
 
-  /** Remove a player from the whitelist. */
+  /**
+   * Remove a player from the whitelist.
+   *
+   * Server-side (`ServerApi.whitelistDelete`) reads `uuid`/`name` from the
+   * query string, not the request body.
+   */
   removeFromWhitelist(uuid: string): Promise<void> {
-    return this.http.request("DELETE", "server/whitelist", { body: { uuid } });
+    return this.http.request("DELETE", "server/whitelist", { query: { uuid } });
   }
 
   /**
@@ -77,7 +99,7 @@ export class ServerModule {
 
   /** Ban an IP address. */
   banIp(ip: string, reason?: string): Promise<void> {
-    return this.http.request("POST", "server/ban-ip", { body: { ip, reason } });
+    return this.http.request("POST", "server/ban-ip", { body: { ip, reason }, form: true });
   }
 
   /** Get a scoreboard objective's scores by objective name. */
@@ -94,23 +116,34 @@ export class ServerModule {
   setScore(objective: string, entry: string, value: number): Promise<void> {
     return this.http.request("POST", `scoreboard/${encodeURIComponent(objective)}/score`, {
       body: { entry, value },
+      form: true,
     });
   }
 
-  /** Reset (remove) a score for an entry on an objective. */
+  /**
+   * Reset (remove) a score for an entry on an objective.
+   *
+   * Server-side (`ServerApi.resetScore`) reads `entry` from the query
+   * string, not the request body.
+   */
   resetScore(objective: string, entry: string): Promise<void> {
     return this.http.request("DELETE", `scoreboard/${encodeURIComponent(objective)}/score`, {
-      body: { entry },
+      query: { entry },
     });
   }
 
   /** Broadcast a message to every player on the server. */
   broadcast(message: string): Promise<void> {
-    return this.http.request("POST", "chat/broadcast", { body: { message } });
+    return this.http.request("POST", "chat/broadcast", { body: { message }, form: true });
   }
 
-  /** Send a private message to a specific player. */
+  /**
+   * Send a private message to a specific player.
+   *
+   * Server-side (`ServerApi.tellPost`) reads `ctx.formParam("playerUuid")`,
+   * not "uuid".
+   */
   tell(uuid: string, message: string): Promise<void> {
-    return this.http.request("POST", "chat/tell", { body: { uuid, message } });
+    return this.http.request("POST", "chat/tell", { body: { playerUuid: uuid, message }, form: true });
   }
 }

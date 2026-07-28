@@ -10,11 +10,15 @@ export class PluginsModule {
   }
 
   /**
-   * Install a plugin from a URL or identifier.
+   * Install a plugin by downloading it from a direct URL.
    * This is a privileged endpoint — requires a write-enabled API key.
+   *
+   * Server-side (`PluginApi.installPlugin`) reads
+   * `ctx.formParam("downloadUrl")`, not "source", and the request must be
+   * form-urlencoded.
    */
-  install(source: string): Promise<void> {
-    return this.http.request("POST", "plugins", { body: { source } });
+  install(downloadUrl: string): Promise<void> {
+    return this.http.request("POST", "plugins", { body: { downloadUrl }, form: true });
   }
 
   /** Enable a plugin by name. */

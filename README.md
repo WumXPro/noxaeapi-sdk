@@ -69,6 +69,23 @@ try {
 }
 ```
 
+## Request encoding
+
+The server is a Javalin app, and most endpoints read their body with
+`ctx.formParam(...)` — i.e. `application/x-www-form-urlencoded` — rather
+than JSON. The SDK follows the same split:
+
+- **Form-urlencoded**: everything in `economy`, `players`, `server`
+  (except `luckperms`/`noxauth`), `worlds`, `plugins`, and `placeholders`.
+- **JSON**: `client.luckperms.*` and `client.noxauth.checkPassword` only —
+  these are read server-side with `ctx.bodyAsClass(...)`.
+
+If you're adding a new SDK method, check which one the corresponding
+Javalin handler uses before wiring it up, and pass `form: true` to
+`http.request(...)` if it's form-urlencoded (this is also the more common
+case). Getting this wrong won't throw a type error — the request just
+silently sends the wrong content type and the server won't see the field.
+
 ## Optional modules
 
 Some modules only work depending on the target server's setup:

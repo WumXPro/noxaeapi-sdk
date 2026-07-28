@@ -80,7 +80,7 @@ export class HttpEngine {
   }
 
   private buildUrl(path: string, query?: Record<string, QueryValue>): string {
-    const url = new URL(`${this.baseUrl}/${path.replace(/^\/+/, "")}`);
+    const url = new URL(`${this.baseUrl}/v1/${path.replace(/^\/+/, "")}`);
     if (query) {
       for (const [key, value] of Object.entries(query)) {
         if (value !== undefined && value !== null) {
@@ -97,6 +97,16 @@ export class HttpEngine {
     opts: {
       body?: unknown;
       query?: Record<string, QueryValue>;
+      /**
+       * Encode `body` as `application/x-www-form-urlencoded` (Javalin's
+       * `ctx.formParam(...)`) instead of JSON. Most NoxAeApi endpoints
+       * expect form-urlencoded bodies — only the LuckPerms and NoxAuth
+       * routes use `ctx.bodyAsClass(...)` and need real JSON. Defaults to
+       * `false` (JSON) to preserve existing behavior; each module call
+       * site is responsible for passing `form: true` where the server
+       * actually expects it.
+       */
+      form?: boolean;
     } = {},
   ): Promise<T> {
     const url = this.buildUrl(path, opts.query);
@@ -114,12 +124,22 @@ export class HttpEngine {
           ...this.extraHeaders,
         };
         if (this.apiKey) headers["key"] = this.apiKey;
-        if (opts.body !== undefined) headers["Content-Type"] = "application/json";
+
+        let encodedBody: string | undefined;
+        if (opts.body !== undefined) {
+          if (opts.form) {
+            headers["Content-Type"] = "application/x-www-form-urlencoded";
+            encodedBody = encodeFormBody(opts.body);
+          } else {
+            headers["Content-Type"] = "application/json";
+            encodedBody = JSON.stringify(opts.body);
+          }
+        }
 
         const response = await this.fetchImpl(url, {
           method,
           headers,
-          body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined,
+          body: encodedBody,
           signal: controller.signal,
         });
 
@@ -196,6 +216,29 @@ export class HttpEngine {
       ? lastError
       : new Error("Request failed after retries");
   }
+}
+
+/**
+ * Encodes a plain object as `application/x-www-form-urlencoded`, matching
+ * what Javalin's `ctx.formParam(name)` reads server-side. `undefined`/`null`
+ * values are omitted (so optional fields can be left out entirely rather
+ * than sent as the literal string "undefined"). Non-primitive values are
+ * JSON.stringify'd as a fallback, though no current endpoint needs that.
+ */
+function encodeFormBody(body: unknown): string {
+  const params = new URLSearchParams();
+  if (body && typeof body === "object") {
+    for (const [key, value] of Object.entries(body as Record<string, unknown>)) {
+      if (value === undefined || value === null) continue;
+      params.set(
+        key,
+        typeof value === "string" || typeof value === "number" || typeof value === "boolean"
+          ? String(value)
+          : JSON.stringify(value),
+      );
+    }
+  }
+  return params.toString();
 }
 
 function safeJsonParse(text: string | undefined): unknown {

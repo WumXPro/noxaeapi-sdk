@@ -14,12 +14,18 @@ export class PlaceholdersModule {
   constructor(private readonly http: HttpEngine) {}
 
   /**
-   * Replace PlaceholderAPI-style placeholders (e.g. "%player_name%") for a
-   * player, returning the resolved string.
+   * Replace PlaceholderAPI-style placeholders (e.g. "%player_name%") in
+   * `message` for a player, returning the resolved string.
+   *
+   * Server-side this is `PAPIApi.replacePlaceholders`, which reads
+   * `ctx.formParam("message")` and `ctx.formParam("uuid")` — the field is
+   * literally named "message", not "text", and the whole body must be
+   * form-urlencoded.
    */
-  replace(uuid: string, text: string): Promise<{ result: string }> {
+  replace(uuid: string, message: string): Promise<string> {
     return this.http.request("POST", "placeholders/replace", {
-      body: { uuid, text },
+      body: { uuid, message },
+      form: true,
     });
   }
 }

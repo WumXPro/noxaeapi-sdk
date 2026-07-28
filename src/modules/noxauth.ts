@@ -5,6 +5,10 @@ import type { NoxAuthPlayerInfo, PasswordCheckResult } from "../types/models.js"
  * Wraps the `/v1/noxauth/*` routes. These only work when `noxauth.enabled`
  * is set to true in the server's noxaeapi-config.yml and the NoxAuth plugin
  * is installed.
+ *
+ * `checkPassword`'s body is sent as real JSON (the server parses it with
+ * `GsonSingleton...fromJson(ctx.body(), PasswordCheckRequest.class)`, not
+ * `ctx.formParam(...)`) — do not add `form: true` to that call.
  */
 export class NoxAuthModule {
   constructor(private readonly http: HttpEngine) {}

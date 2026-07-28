@@ -23,11 +23,11 @@ export class EconomyModule {
 
   /** Pay an amount to a player (adds to their balance). */
   pay(uuid: string, amount: number): Promise<void> {
-    return this.http.request("POST", "economy/pay", { body: { uuid, amount } });
+    return this.http.request("POST", "economy/pay", { body: { uuid, amount }, form: true });
   }
 
   /** Debit an amount from a player (subtracts from their balance). */
   debit(uuid: string, amount: number): Promise<void> {
-    return this.http.request("POST", "economy/debit", { body: { uuid, amount } });
+    return this.http.request("POST", "economy/debit", { body: { uuid, amount }, form: true });
   }
 }

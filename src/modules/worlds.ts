@@ -34,20 +34,25 @@ export class WorldsModule {
     return this.http.request("GET", `worlds/${encodeURIComponent(uuid)}/download`);
   }
 
-  /** Set the in-game time for a world. */
+  /** Set the in-game time for a world (0-24000). */
   setTime(uuid: string, time: number): Promise<void> {
     return this.http.request("POST", `worlds/${encodeURIComponent(uuid)}/time`, {
       body: { time },
+      form: true,
     });
   }
 
-  /** Set weather (storm/thundering) for a world. */
-  setWeather(
-    uuid: string,
-    weather: { storm?: boolean; thundering?: boolean },
-  ): Promise<void> {
+  /**
+   * Set the weather for a world.
+   *
+   * Server-side (`WorldApi.setWorldWeather`) reads a single
+   * `ctx.formParam("weather")` enum string — "clear" | "rain" | "thunder" —
+   * not separate storm/thundering booleans.
+   */
+  setWeather(uuid: string, weather: "clear" | "rain" | "thunder"): Promise<void> {
     return this.http.request("POST", `worlds/${encodeURIComponent(uuid)}/weather`, {
-      body: weather,
+      body: { weather },
+      form: true,
     });
   }
 

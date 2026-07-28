@@ -7,6 +7,10 @@ import type { GroupInfo, PermissionNode } from "../types/models.js";
  * without it will fail (typically a 404). There's no separate "is this
  * available" flag from the SDK's side; check `client.plugins.list()` for
  * LuckPerms if you need to branch on it ahead of time.
+ *
+ * Unlike most other modules, these POST/DELETE bodies are sent as real
+ * JSON (the server reads them with `ctx.bodyAsClass(...)`, not
+ * `ctx.formParam(...)`) — do not add `form: true` to these calls.
  */
 export class LuckPermsModule {
   constructor(private readonly http: HttpEngine) {}

@@ -23,7 +23,7 @@ export interface NoxAeApiWsOptions {
 }
 
 function toWsUrl(baseUrl: string, route: string, apiKey?: string): string {
-  const url = new URL(`${baseUrl.replace(/\/+$/, "")}/${route.replace(/^\/+/, "")}`);
+  const url = new URL(`${baseUrl.replace(/\/+$/, "")}/v1/ws/${route.replace(/^\/+/, "")}`);
   url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
   if (apiKey) url.searchParams.set("key", apiKey);
   return url.toString();
