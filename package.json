@@ -1,0 +1,50 @@
+{
+  "name": "@wumx-labs/noxaeapi-sdk",
+  "version": "0.1.0",
+  "description": "Typed JS/TS SDK for the NoxAeApi REST + WebSocket API (Fabric, Bukkit/Spigot/Paper)",
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "minecraft",
+    "fabric",
+    "bukkit",
+    "spigot",
+    "paper",
+    "noxaeapi",
+    "noxlydev",
+    "wumx",
+    "wumx-labs",
+    "rest-client",
+    "sdk"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
