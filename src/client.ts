@@ -7,6 +7,7 @@ import { PluginsModule } from "./modules/plugins.js";
 import { AdvancementsModule, PlaceholdersModule } from "./modules/misc.js";
 import { LuckPermsModule } from "./modules/luckperms.js";
 import { NoxAuthModule } from "./modules/noxauth.js";
+import { SkillsModule } from "./modules/skills.js";
 import { NoxAeApiSocket, type NoxAeApiWsOptions } from "./socket.js";
 
 export class NoxAeApiClient {
@@ -21,6 +22,8 @@ export class NoxAeApiClient {
   readonly luckperms: LuckPermsModule;
   /** Only works if `noxauth.enabled: true` is set in the server config. */
   readonly noxauth: NoxAuthModule;
+  /** Requires mcMMO and/or AuraSkills to be loaded on the target server. */
+  readonly skills: SkillsModule;
 
   private readonly http: HttpEngine;
   private readonly baseUrl: string;
@@ -40,6 +43,7 @@ export class NoxAeApiClient {
     this.placeholders = new PlaceholdersModule(this.http);
     this.luckperms = new LuckPermsModule(this.http);
     this.noxauth = new NoxAuthModule(this.http);
+    this.skills = new SkillsModule(this.http);
   }
 
   /**

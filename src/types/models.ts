@@ -173,3 +173,10 @@ export interface PlayerStats {
   blocksPlaced: number;
   blocksBroken: number;
 }
+
+export interface SkillInfo {
+  uuid: string;
+  /** Skill name -> level. */
+  skills: Record<string, number>;
+  powerLevel: number;
+}

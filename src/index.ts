@@ -35,4 +35,5 @@ export type {
   NoxAuthPlayerInfo,
   PasswordCheckResult,
   PlayerStats,
+  SkillInfo,
 } from "./types/models.js";
