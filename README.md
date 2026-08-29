@@ -1,8 +1,10 @@
 # @wumx-labs/noxaeapi-sdk
 
-Typed JS/TS SDK for [NoxAeApi](https://github.com), a REST + WebSocket API plugin/mod for Minecraft servers — ships for both Fabric and Bukkit/Spigot/PaperMC. The REST surface is identical across platforms, so this SDK works against either without any platform-specific configuration.
+Typed JS/TS SDK for [NoxAeApi](https://github.com/WumXPro/noxaeapi-sdk), a REST + WebSocket API plugin/mod for Minecraft servers — ships for both Fabric and Bukkit/Spigot/PaperMC. The REST surface is identical across platforms, so this SDK works against either without any platform-specific configuration.
 
 Zero runtime dependencies — uses native `fetch` and `WebSocket`.
+
+📖 **Docs:** [noxapi.noxlydev.xyz](https://noxapi.noxlydev.xyz)
 
 ## Install
 
