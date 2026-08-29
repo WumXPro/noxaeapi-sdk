@@ -1,0 +1,34 @@
+name: Discord Release Notification
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Discord Notification
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          curl -H "Content-Type: application/json" \
+          -X POST \
+          -d @- "$DISCORD_WEBHOOK" <<EOF
+          {
+            "username": "Release Bot",
+            "avatar_url": "https://your-cdn.com/logo.png",
+            "embeds": [{
+              "title": "🚀 ${{ github.event.repository.name }} v${{ github.event.release.tag_name }} dirilis!",
+              "url": "${{ github.event.release.html_url }}",
+              "description": "${{ github.event.release.body }}",
+              "color": 3066993,
+              "fields": [
+                { "name": "Package", "value": "\`${{ github.event.repository.name }}\`", "inline": true },
+                { "name": "Author", "value": "${{ github.event.release.author.login }}", "inline": true }
+              ],
+              "footer": { "text": "npm publish • GitHub Actions" },
+              "timestamp": "${{ github.event.release.published_at }}"
+            }]
+          }
+          EOF
