@@ -23,6 +23,11 @@ const client = new NoxAeApiClient({
 const players = await client.players.list();
 const balance = await client.economy.getBalance(players[0].uuid);
 await client.server.broadcast("Hello from the SDK!");
+
+// Multi-currency (ExcellentEconomy), leaderboards, and network aggregator:
+const coins = await client.economy.getCurrencyBalance("coins", players[0].uuid);
+const top = await client.leaderboards.getTop("mcmmo-power", 10);
+const network = await client.network.statusAll();
 ```
 
 ### From environment variables
@@ -75,10 +80,15 @@ The server is a Javalin app, and most endpoints read their body with
 `ctx.formParam(...)` — i.e. `application/x-www-form-urlencoded` — rather
 than JSON. The SDK follows the same split:
 
-- **Form-urlencoded**: everything in `economy`, `players`, `server`
-  (except `luckperms`/`noxauth`), `worlds`, `plugins`, and `placeholders`.
-- **JSON**: `client.luckperms.*` and `client.noxauth.checkPassword` only —
+- **Form-urlencoded**: everything in `economy` (including the
+  `economy.currency*`/ExcellentEconomy methods), `players`, `server`
+  (except `luckperms`/`noxauth`), `worlds`, `plugins`, `placeholders`, and
+  `network.broadcast`.
+- **JSON**: `client.luckperms.*` (except `luckperms.checkPlayerPermission`'s
+  siblings, which are also JSON) and `client.noxauth.checkPassword` only —
   these are read server-side with `ctx.bodyAsClass(...)`.
+- **N/A (GET only)**: `client.leaderboards.*` and most of `client.network.*`
+  are read-only.
 
 If you're adding a new SDK method, check which one the corresponding
 Javalin handler uses before wiring it up, and pass `form: true` to
@@ -92,6 +102,8 @@ Some modules only work depending on the target server's setup:
 
 - `client.luckperms.*` — requires the LuckPerms mod to be loaded on the server
 - `client.noxauth.*` — requires `noxauth.enabled: true` in the server's `noxaeapi-config.yml`
+- `client.economy.getCurrencyBalance()`/`.payCurrency()`/`.debitCurrency()`/`.setCurrencyBalance()`/`.getCurrencyTop()`/`.listCurrencies()` — requires ExcellentEconomy (throws a 424 error if it isn't installed)
+- `client.network.*` — requires `network.enabled: true` with at least one backend server configured in the server's config
 
 Calling these against a server without the corresponding feature enabled will fail (typically 404).
 

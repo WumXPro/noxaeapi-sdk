@@ -1,6 +1,6 @@
 {
   "name": "@wumx-labs/noxaeapi-sdk",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Typed JS/TS SDK for the NoxAeApi REST + WebSocket API (Fabric, Bukkit/Spigot/Paper)",
   "type": "module",
   "publishConfig": {

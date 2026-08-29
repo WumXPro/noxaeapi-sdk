@@ -80,6 +80,23 @@ export class LuckPermsModule {
     return this.http.request("GET", "luckperms/groups");
   }
 
+  /**
+   * Create a new LuckPerms group. The name is lowercased server-side.
+   * Throws `NoxAeApiError` with a 409 status if the group already exists.
+   */
+  createGroup(name: string): Promise<{ name: string; status: string }> {
+    return this.http.request("POST", "luckperms/groups", { body: { name } });
+  }
+
+  /**
+   * Delete a LuckPerms group by name.
+   * The `default` group can't be deleted (400 — every user without an
+   * explicit group inherits from it) and a 404 is thrown if it doesn't exist.
+   */
+  deleteGroup(name: string): Promise<void> {
+    return this.http.request("DELETE", `luckperms/group/${encodeURIComponent(name)}`);
+  }
+
   /** Get the permissions attached to a specific group. */
   getGroupPermissions(name: string): Promise<GroupInfo> {
     return this.http.request("GET", `luckperms/group/${encodeURIComponent(name)}/permissions`);

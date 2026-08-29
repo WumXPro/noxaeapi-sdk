@@ -180,3 +180,75 @@ export interface SkillInfo {
   skills: Record<string, number>;
   powerLevel: number;
 }
+
+/** A single currency configured on ExcellentEconomy (multi-currency, non-Vault). */
+export interface CurrencyBalance {
+  uuid: string;
+  name: string | null;
+  currency: string;
+  balance: number;
+}
+
+export interface CurrencyTopEntry {
+  uuid: string;
+  name: string;
+  balance: number;
+}
+
+/** Entry returned by `GET /v1/leaderboards` describing one registered leaderboard source. */
+export interface LeaderboardSourceInfo {
+  id: string;
+  displayName: string;
+  available: boolean;
+  /** True if this source can only rank currently-online players (e.g. mcMMO). */
+  onlineOnly: boolean;
+}
+
+/** A single ranked entry from `GET /v1/leaderboards/{id}/top`. Shape can vary slightly by source. */
+export interface LeaderboardEntry {
+  uuid: string;
+  name: string;
+  value: number;
+  [key: string]: unknown;
+}
+
+export interface NetworkServerStatus {
+  id: string;
+  label: string;
+  online: boolean;
+  server: ServerInfo | null;
+  players: OnlinePlayer[];
+}
+
+export interface NetworkPlayersServerEntry {
+  id: string;
+  label: string;
+  online: boolean;
+  players: OnlinePlayer[];
+}
+
+export interface NetworkPlayersResponse {
+  total: number;
+  servers: NetworkPlayersServerEntry[];
+}
+
+export interface NetworkFindPlayerResponse {
+  found: boolean;
+  server?: string;
+  player?: OnlinePlayer;
+}
+
+export interface NetworkHealthServerEntry {
+  id: string;
+  label: string;
+  online: boolean;
+  tps?: unknown;
+  health?: unknown;
+}
+
+export interface NetworkHealthResponse {
+  servers: NetworkHealthServerEntry[];
+}
+
+/** Per-server "success" | "error" result, keyed by network server ID. */
+export type NetworkBroadcastResponse = Record<string, "success" | "error">;

@@ -8,6 +8,8 @@ import { AdvancementsModule, PlaceholdersModule } from "./modules/misc.js";
 import { LuckPermsModule } from "./modules/luckperms.js";
 import { NoxAuthModule } from "./modules/noxauth.js";
 import { SkillsModule } from "./modules/skills.js";
+import { LeaderboardModule } from "./modules/leaderboard.js";
+import { NetworkModule } from "./modules/network.js";
 import { NoxAeApiSocket, type NoxAeApiWsOptions } from "./socket.js";
 
 export class NoxAeApiClient {
@@ -24,6 +26,10 @@ export class NoxAeApiClient {
   readonly noxauth: NoxAuthModule;
   /** Requires mcMMO and/or AuraSkills to be loaded on the target server. */
   readonly skills: SkillsModule;
+  /** Generic ranked leaderboards (economy currencies, mcMMO, AuraSkills, ...). */
+  readonly leaderboards: LeaderboardModule;
+  /** Only works if `network.enabled: true` is set in the server config. */
+  readonly network: NetworkModule;
 
   private readonly http: HttpEngine;
   private readonly baseUrl: string;
@@ -44,6 +50,8 @@ export class NoxAeApiClient {
     this.luckperms = new LuckPermsModule(this.http);
     this.noxauth = new NoxAuthModule(this.http);
     this.skills = new SkillsModule(this.http);
+    this.leaderboards = new LeaderboardModule(this.http);
+    this.network = new NetworkModule(this.http);
   }
 
   /**
