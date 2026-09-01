@@ -252,3 +252,56 @@ export interface NetworkHealthResponse {
 
 /** Per-server "success" | "error" result, keyed by network server ID. */
 export type NetworkBroadcastResponse = Record<string, "success" | "error">;
+
+// ─── NoxAeApi-Velocity network hub (v0.4+) ───────────────────────────────
+//
+// These shapes belong to the newer NoxAeApi-Velocity proxy plugin, which
+// replaces the polling `/v1/network/*` aggregator above with a push model:
+// backend servers connect out to the proxy over WebSocket and report
+// register/heartbeat events, and the hub answers REST calls from its own
+// in-memory registry instead of fanning out live requests to each backend.
+// Same route names, different response shapes — do not mix these with the
+// NetworkServerStatus/NetworkPlayersResponse family above. There is no hub
+// equivalent of `/v1/network/health`; per-node health is embedded in
+// `NetworkHubNode.health` instead. See `NetworkHubModule`.
+
+/** Last-known state of one backend node, as tracked by the network hub. */
+export interface NetworkHubNode {
+  id: string;
+  label: string;
+  online: boolean;
+  tps: string;
+  onlinePlayers: number;
+  maxPlayers: number;
+  /** Opaque payload the backend reported in its last heartbeat. Shape isn't fixed by the hub. */
+  health: unknown;
+  /** Unix epoch ms of the last heartbeat received, or 0 if never. */
+  lastHeartbeatAt: number;
+}
+
+export interface NetworkHubStatusResponse {
+  network: NetworkHubNode[];
+}
+
+/** A player as seen directly by the proxy (not reported by a backend). */
+export interface NetworkHubPlayer {
+  uuid: string;
+  name: string;
+  /** Backend server ID the player is currently connected to, if known. */
+  server?: string;
+}
+
+export interface NetworkHubPlayersResponse {
+  total: number;
+  players: NetworkHubPlayer[];
+}
+
+export interface NetworkHubFindPlayerResponse {
+  found: boolean;
+  player?: NetworkHubPlayer;
+}
+
+/** Result of a proxy-wide broadcast: how many connected players received the message. */
+export interface NetworkHubBroadcastResponse {
+  delivered: number;
+}

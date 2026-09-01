@@ -109,6 +109,47 @@ Some modules only work depending on the target server's setup:
 
 Calling these against a server without the corresponding feature enabled will fail (typically 404).
 
+## NoxAeApi-Velocity network hub
+
+If your network runs the **NoxAeApi-Velocity** proxy plugin, use
+`NoxAeApiNetworkHubClient` instead of (or alongside) `NoxAeApiClient` —
+point it at the hub's own REST port, not a backend server's port.
+Backend servers push register/heartbeat updates to the hub over
+WebSocket, so hub calls answer from its in-memory registry rather than
+fanning out live requests the way `client.network.*` above does — and
+the response shapes differ accordingly (e.g. `players()` is one flat
+proxy-wide list, not a per-backend breakdown, and there's no hub
+equivalent of `network/health` — see each node's `health` field in
+`statusAll()`/`statusById()` instead).
+
+```ts
+import { NoxAeApiNetworkHubClient } from "@wumx-labs/noxaeapi-sdk";
+
+const hub = new NoxAeApiNetworkHubClient({
+  baseUrl: "http://localhost:9090", // the hub's api-port, not a backend's port
+  apiKey: "your-hub-key",
+});
+
+const status = await hub.network.statusAll();
+const players = await hub.network.players();
+const found = await hub.network.findPlayer(players.players[0]?.uuid ?? "");
+await hub.network.broadcast("Hello from the hub!");
+
+// Reach a specific backend's own REST routes through the hub:
+await hub.network.forward("survival", "POST", "server/exec", {
+  body: { command: "say hi" },
+  form: true,
+});
+```
+
+Or from environment variables (`NOXAEAPI_HUB_BASE_URL` / `NOXAEAPI_HUB_KEY`,
+kept separate from `NoxAeApiClient.fromEnv()`'s `NOXAEAPI_*` vars so a
+process can hold both clients at once):
+
+```ts
+const hub = NoxAeApiNetworkHubClient.fromEnv();
+```
+
 ## Configuration
 
 ```ts

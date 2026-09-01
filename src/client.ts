@@ -10,6 +10,7 @@ import { NoxAuthModule } from "./modules/noxauth.js";
 import { SkillsModule } from "./modules/skills.js";
 import { LeaderboardModule } from "./modules/leaderboard.js";
 import { NetworkModule } from "./modules/network.js";
+import { NetworkHubModule } from "./modules/network-hub.js";
 import { NoxAeApiSocket, type NoxAeApiWsOptions } from "./socket.js";
 
 export class NoxAeApiClient {
@@ -28,7 +29,17 @@ export class NoxAeApiClient {
   readonly skills: SkillsModule;
   /** Generic ranked leaderboards (economy currencies, mcMMO, AuraSkills, ...). */
   readonly leaderboards: LeaderboardModule;
-  /** Only works if `network.enabled: true` is set in the server config. */
+  /**
+   * Only works if `network.enabled: true` is set in the server config.
+   *
+   * This is NoxAeApi-main's built-in polling aggregator — it lives on the
+   * *same* backend server you're already connected to and fans requests
+   * out to the other backends listed in that server's own config. If the
+   * network is running NoxAeApi-Velocity instead, use
+   * `NoxAeApiNetworkHubClient` (pointed at the proxy's hub port) rather
+   * than this module — the hub replaces this aggregator with a push model
+   * and its response shapes differ.
+   */
   readonly network: NetworkModule;
 
   private readonly http: HttpEngine;
@@ -85,5 +96,51 @@ export class NoxAeApiClient {
       apiKey: this.apiKey,
       ...options,
     });
+  }
+}
+
+/**
+ * Client for the **NoxAeApi-Velocity** network hub — a separate plugin
+ * that runs on the Velocity proxy, not on any individual backend server.
+ * Point `baseUrl` at the hub's own REST port (`NetworkHubConfig`'s
+ * `api-port`), not a backend's port, and use `NOXAEAPI_HUB_*` env vars
+ * (via `fromEnv`) if you keep that separate from a regular backend's
+ * `NOXAEAPI_*` vars.
+ *
+ * Only exposes `.network` — the hub doesn't run any of the other REST
+ * modules (players, economy, worlds, ...) that a backend `NoxAeApiClient`
+ * does. To reach a specific backend's own routes through the hub, use
+ * `hub.network.forward(id, ...)`.
+ */
+export class NoxAeApiNetworkHubClient {
+  /** The network hub's aggregated view of every registered backend node. */
+  readonly network: NetworkHubModule;
+
+  constructor(options: NoxAeApiClientOptions) {
+    const http = new HttpEngine(options);
+    this.network = new NetworkHubModule(http);
+  }
+
+  /**
+   * Build a hub client from environment variables:
+   * `NOXAEAPI_HUB_BASE_URL` and `NOXAEAPI_HUB_KEY`.
+   *
+   * Same convenience as `NoxAeApiClient.fromEnv()`, under separate env var
+   * names so a process can hold both a backend client and a hub client at
+   * once without the two colliding.
+   */
+  static fromEnv(overrides: Partial<NoxAeApiClientOptions> = {}): NoxAeApiNetworkHubClient {
+    const env = (globalThis as { process?: { env?: Record<string, string | undefined> } })
+      .process?.env;
+    const baseUrl = overrides.baseUrl ?? env?.NOXAEAPI_HUB_BASE_URL;
+    const apiKey = overrides.apiKey ?? env?.NOXAEAPI_HUB_KEY;
+
+    if (!baseUrl) {
+      throw new Error(
+        "NoxAeApiNetworkHubClient.fromEnv(): NOXAEAPI_HUB_BASE_URL is not set and no baseUrl override was given.",
+      );
+    }
+
+    return new NoxAeApiNetworkHubClient({ ...overrides, baseUrl, apiKey });
   }
 }
