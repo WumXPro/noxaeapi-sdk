@@ -31,6 +31,12 @@ export interface OfflinePlayer {
   lastPlayed: number;
 }
 
+/** Result of resolving a player name to their UUID via `GET /players/resolve/{name}`. */
+export interface PlayerResolveResult {
+  name: string;
+  uuid: string;
+}
+
 export interface ServerHealth {
   cpus: number;
   uptime: number;
@@ -210,6 +216,67 @@ export interface LeaderboardEntry {
   name: string;
   value: number;
   [key: string]: unknown;
+}
+
+/** Ban details for a player, as reported by `GET /v1/players/{uuid}/profile`'s `status.ban`. */
+export interface PlayerProfileBan {
+  banned: boolean;
+  /** Only present when `banned` is true. */
+  reason?: string;
+  /** Only present when `banned` is true. */
+  source?: string;
+  /** Only present when `banned` is true. Serialized server-side as a locale-formatted date string, not ISO-8601. */
+  created?: string;
+  /** Only present when `banned` is true. `null`/absent means a permanent ban. Same date-string format as `created`. */
+  expires?: string | null;
+}
+
+/** Whitelist + ban status for a player, as reported by `GET /v1/players/{uuid}/profile`'s `status` field. */
+export interface PlayerProfileStatus {
+  whitelisted: boolean;
+  ban: PlayerProfileBan;
+}
+
+/**
+ * Vault economy info for a player, as reported by `GET /v1/players/{uuid}/profile`'s `economy`
+ * field. Single-currency (Vault), not ExcellentEconomy's multi-currency system - see
+ * `EconomyModule.getCurrencyBalance` for that.
+ */
+export interface PlayerProfileEconomy {
+  available: boolean;
+  /** Only present when `available` is true. */
+  balance?: number;
+}
+
+/** One leaderboard source's contribution to a player profile's `stats` array. */
+export interface PlayerProfileStatTile {
+  id: string;
+  label: string;
+  status: "ranked" | "not_ranked" | "unavailable";
+  /** Only present when `status` is "ranked". */
+  value?: number;
+  /** Only present when `status` is "ranked" and the source reports a positive rank. */
+  rank?: number;
+}
+
+/**
+ * One-call player profile combining identity, whitelist/ban status, Vault balance, and this
+ * player's entry in every registered leaderboard source. Returned by
+ * `GET /v1/players/{uuid}/profile` and (as the `players` array) by `GET /v1/players/profiles`.
+ */
+export interface PlayerProfile {
+  name: string | null;
+  uuid: string;
+  online: boolean;
+  status: PlayerProfileStatus;
+  economy: PlayerProfileEconomy;
+  stats: PlayerProfileStatTile[];
+}
+
+/** Response shape of `GET /v1/players/profiles` (bulk player profiles). */
+export interface PlayerProfilesResponse {
+  count: number;
+  players: PlayerProfile[];
 }
 
 export interface NetworkServerStatus {

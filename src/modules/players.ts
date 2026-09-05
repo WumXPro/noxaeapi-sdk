@@ -3,6 +3,7 @@ import type {
   InventoryItem,
   OfflinePlayer,
   OnlinePlayer,
+  PlayerResolveResult,
   PlayerStats,
 } from "../types/models.js";
 
@@ -22,6 +23,19 @@ export class PlayersModule {
   /** Get a single player by UUID (works for online or offline players). */
   get(uuid: string): Promise<OnlinePlayer | OfflinePlayer> {
     return this.http.request("GET", `players/${encodeURIComponent(uuid)}`);
+  }
+
+  /**
+   * Resolve a player name to their UUID using the server's own local player
+   * cache (works on both online-mode and offline-mode servers, unlike
+   * Mojang's public API - the UUID returned matches whatever this server
+   * actually uses for that player's stats/economy/etc). Checks currently
+   * online players first, then falls back to the server's offline player
+   * cache. Throws `NoxAeApiNotFoundError` if no known player with that name
+   * has ever joined.
+   */
+  resolve(name: string): Promise<PlayerResolveResult> {
+    return this.http.request("GET", `players/resolve/${encodeURIComponent(name)}`);
   }
 
   /** Get a player's inventory in a specific world. */

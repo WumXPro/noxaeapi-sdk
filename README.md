@@ -30,6 +30,11 @@ await client.server.broadcast("Hello from the SDK!");
 const coins = await client.economy.getCurrencyBalance("coins", players[0].uuid);
 const top = await client.leaderboards.getTop("mcmmo-power", 10);
 const network = await client.network.statusAll();
+
+// Resolve a name to a UUID, then get their one-call profile (identity,
+// ban/whitelist status, Vault balance, and every leaderboard entry at once):
+const { uuid } = await client.players.resolve("NoxlyDev");
+const profile = await client.leaderboards.getPlayerProfile(uuid);
 ```
 
 ### From environment variables
