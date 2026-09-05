@@ -76,7 +76,14 @@ export class HttpEngine {
         "No fetch implementation available. Pass `fetchImpl` in options for this runtime.",
       );
     }
-    this.fetchImpl = fetchImpl;
+    // Bind to globalThis: browsers' native `fetch` throws "Illegal
+    // invocation" when called with a `this` other than `window`/`self`.
+    // Storing the bare function reference on this class and later calling
+    // it as `this.fetchImpl(...)` rebinds `this` to the instance, which
+    // trips that check. Binding here (once, in the constructor) keeps the
+    // call site simple and works whether `fetchImpl` came from the caller
+    // or from `globalThis.fetch`.
+    this.fetchImpl = fetchImpl.bind(globalThis);
   }
 
   private buildUrl(path: string, query?: Record<string, QueryValue>): string {
