@@ -35,6 +35,14 @@ const network = await client.network.statusAll();
 // ban/whitelist status, Vault balance, and every leaderboard entry at once):
 const { uuid } = await client.players.resolve("NoxlyDev");
 const profile = await client.leaderboards.getPlayerProfile(uuid);
+
+// LuckPerms (requires the plugin to be loaded on the target server):
+await client.luckperms.setPlayerGroup(uuid, "vip");
+await client.luckperms.addPlayerPermission(uuid, "essentials.fly", { expiry: "2026-12-31T00:00:00Z" });
+const { has } = await client.luckperms.checkPlayerPermission(uuid, "essentials.fly");
+await client.luckperms.promotePlayer(uuid, "default"); // moves them up the "default" track
+const group = await client.luckperms.getGroupInfo("vip");
+await client.luckperms.setGroupPrefix("vip", "&b[VIP] ");
 ```
 
 ### From environment variables

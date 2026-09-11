@@ -136,17 +136,75 @@ export interface TopBalanceEntry {
   balance: number;
 }
 
-export interface GroupInfo {
-  name: string;
-  permissions: string[];
-}
-
+/** A single LuckPerms node (permission, inheritance, prefix, etc.) as returned by the server. */
 export interface PermissionNode {
   permission: string;
   value: boolean;
+  /** Epoch seconds, or `0` for a permanent (non-expiring) node. */
   expiry: number;
-  server: string | null;
-  world: string | null;
+  /** Server context this node applies to, or the literal `"global"` if none was set. */
+  server: string;
+  /** World context this node applies to, or the literal `"global"` if none was set. */
+  world: string;
+}
+
+export interface GroupInfo {
+  name: string;
+  /** `null` if the group has no display name node set. */
+  displayName: string | null;
+  weight: number;
+  permissions: PermissionNode[];
+}
+
+/** A player's or group's resolved prefix, suffix, and custom meta key-values. */
+export interface MetaInfo {
+  prefix: string | null;
+  suffix: string | null;
+  /** LuckPerms keeps every value ever set per key; the highest-priority one wins in-game. */
+  meta: Record<string, string[]>;
+}
+
+/** A LuckPerms track (an ordered rank ladder used for promote/demote). */
+export interface TrackInfo {
+  name: string;
+  /** Ordered from lowest to highest rank. */
+  groups: string[];
+}
+
+/** Optional server/world context that scopes a node to a subset of the network. */
+export interface LuckPermsContextOptions {
+  /** e.g. `"survival"` — matches LuckPerms' `server` context key. */
+  server?: string;
+  /** e.g. `"world_nether"` — matches LuckPerms' `world` context key. */
+  world?: string;
+}
+
+export interface LuckPermsCheckPermissionResult {
+  uuid: string;
+  permission: string;
+  has: boolean;
+}
+
+export interface LuckPermsPrimaryGroupResult {
+  uuid: string;
+  primaryGroup: string;
+}
+
+export interface LuckPermsCreateGroupResult {
+  name: string;
+  status: string;
+}
+
+/** Result of a promote/demote call along a track. */
+export interface LuckPermsTrackActionResult {
+  uuid: string;
+  track: string;
+  /** `false` for statuses like `END_OF_TRACK`/`AMBIGUOUS_CALL`, where nothing was changed. */
+  success: boolean;
+  /** Raw LuckPerms `PromotionResult`/`DemotionResult` status, e.g. `"SUCCESS"`, `"END_OF_TRACK"`. */
+  status: string;
+  from: string | null;
+  to: string | null;
 }
 
 export interface Advancement {

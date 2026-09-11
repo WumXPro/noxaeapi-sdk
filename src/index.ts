@@ -3,6 +3,12 @@ export type { NoxAeApiClientOptions, RetryOptions } from "./http-engine.js";
 export { NoxAeApiSocket } from "./socket.js";
 export type { NoxAeApiWsOptions, NoxAeApiWsEvent } from "./socket.js";
 
+export type {
+  AddPermissionOptions,
+  SetGroupOptions,
+  SetMetaValueOptions,
+} from "./modules/luckperms.js";
+
 export {
   NoxAeApiError,
   NoxAeApiUnauthorizedError,
@@ -32,6 +38,13 @@ export type {
   TopBalanceEntry,
   GroupInfo,
   PermissionNode,
+  MetaInfo,
+  TrackInfo,
+  LuckPermsContextOptions,
+  LuckPermsCheckPermissionResult,
+  LuckPermsPrimaryGroupResult,
+  LuckPermsCreateGroupResult,
+  LuckPermsTrackActionResult,
   Advancement,
   NoxAuthPlayerInfo,
   PasswordCheckResult,
